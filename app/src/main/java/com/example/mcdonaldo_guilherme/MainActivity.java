@@ -34,5 +34,10 @@ public class MainActivity extends AppCompatActivity {
             Intent intent = new Intent(MainActivity.this, ofertas.class);
             startActivity(intent);
         });
-            }
-}
+        Button btnGps = findViewById(R.id.button5);
+        btnGps.setOnClickListener(view -> {
+            Intent intent = new Intent(MainActivity.this, gps.class);
+            startActivity(intent);
+        });
+        }
+    }
