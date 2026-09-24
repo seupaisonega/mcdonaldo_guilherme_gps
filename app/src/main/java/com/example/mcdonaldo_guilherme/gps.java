@@ -10,7 +10,7 @@ import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapView;
 import org.osmdroid.views.overlay.Marker;
 
-import java.io.File;
+import java.util.Locale;
 
 public class gps extends AppCompatActivity {
 
@@ -20,45 +20,54 @@ public class gps extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        Configuration.getInstance().setUserAgentValue("McDonaldoGuilhermeApp/1.0 (Android)");
+        // Força a leitura correta de pontos decimais independentemente do idioma do sistema
+        Locale.setDefault(Locale.US);
 
-        File basePath = new File(getCacheDir(), "osmdroid_tiles");
-        File tileCache = new File(basePath, "tiles");
-        Configuration.getInstance().setOsmdroidBasePath(basePath);
-        Configuration.getInstance().setOsmdroidTileCache(tileCache);
+        // Evita o erro "Access Blocked" do servidor do OpenStreetMap
+        Configuration.getInstance().setUserAgentValue("McDonal_VilaGuilherme_App_v3");
 
         setContentView(R.layout.activity_gps);
 
         map = findViewById(R.id.map);
         if (map != null) {
-            map.setTileSource(TileSourceFactory.DEFAULT_TILE_SOURCE);
+            map.setTileSource(TileSourceFactory.MAPNIK);
             map.setMultiTouchControls(true);
 
-            // Coordenada ajustada para o desenho de quadra do OpenStreetMap na Rua Chico Pontes
-            double latitude = -23.504450;
-            double longitude = -46.608900;
+            // Desativa a persistência de estado antigo do mapa na memória
+            map.setDestroyMode(false);
+            if (map.getTileProvider() != null) {
+                map.getTileProvider().clearTileCache();
+            }
 
-            GeoPoint pontoExatoMc = new GeoPoint(latitude, longitude);
+            // Coordenada do ponto selecionado no círculo (R. Maria Cândida x Av. Guilherme Cotching)
+            double latitude = -23.506820;
+            double longitude = -46.598280;
+            final GeoPoint pontoExatoMc = new GeoPoint(latitude, longitude);
 
+            // Limpa todos os marcadores antigos
+            map.getOverlays().clear();
+
+            // Configuração do pino
             Marker startMarker = new Marker(map);
             startMarker.setPosition(pontoExatoMc);
 
-            // Define o ponto de ancoragem exato da ponta inferior do pino
+            // Garante que a PONTA INFERIOR do ícone é o ponto exato no mapa
             startMarker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
             startMarker.setTitle("McDonald's - Vila Guilherme");
-            startMarker.setSnippet("Rua Chico Pontes, 1565");
+            startMarker.setSnippet("Av. Guilherme Cotching x R. Maria Cândida");
+
             map.getOverlays().add(startMarker);
 
+            // Centraliza o mapa diretamente no ponto assim que a visualização for desenhada
             map.post(new Runnable() {
                 @Override
                 public void run() {
                     IMapController mapController = map.getController();
-                    mapController.setZoom(17.0);
+                    mapController.setZoom(18.5);
                     mapController.setCenter(pontoExatoMc);
+                    map.invalidate();
                 }
             });
-
-            map.invalidate();
         }
     }
 
